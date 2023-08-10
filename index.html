@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="UTF-8">
+    <title>GUIX Studio flag decoder</title>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        textarea {
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: scroll;
+        }
+
+        .fill-height {
+            min-height: 100%;
+            height: auto !important;
+            /* cross-browser */
+            height: 100%;
+            /* cross-browser */
+        }
+
+        .overflow-hidden {
+            overflow: hidden;
+        }
+
+        .overflow-scroll {
+            overflow: scroll;
+        }
+
+        .split {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .gutter {
+            background-color: #eee;
+            background-repeat: no-repeat;
+            background-position: 50%;
+        }
+
+        .gutter.gutter-horizontal {
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+            cursor: col-resize;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/codemirror.min.css"
+        integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/hint/show-hint.min.css"
+        integrity="sha512-OmcLQEy8iGiD7PSm85s06dnR7G7C9C0VqahIPAj/KHk5RpOCmnC6R2ob1oK4/uwYhWa9BF1GC6tzxsC8TIx7Jg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xz/fonts@1/serve/source-code-pro.min.css">
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/codemirror.min.js"
+        integrity="sha512-/8pAp30QGvOa8tNBv7WmWiPFgYGOg2JdVtqI8vK+xZsqWHnNd939v9s+zJHXZcJe5wPD44D66zz+CLTD3KacYA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/hint/show-hint.min.js"
+        integrity="sha512-Rx36KK4rJrsLJhzLBmhWGdQJKoog81hHm+0qBZD6IEF2+D+CqWiuiXhtAXoxJzucl4mx8zTYCGKX6zgq6+yLGQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/addon/hint/javascript-hint.min.js"
+        integrity="sha512-omIxBxPdObb7b3giwJtPBiB86Mey/ds7qyKFcRiaLQgDxoSR+UgCYEFO7jRZzPOCZAICabGCraEhOSa71U1zFA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/mode/javascript/javascript.min.js"
+        integrity="sha512-I6CdJdruzGtvDyvdO4YsiAq+pkWf2efgd1ZUSK2FnM/u2VuRASPC7GowWQrWyjxCZn6CT89s3ddGI+be0Ak9Fg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/mode/markdown/markdown.min.js"
+        integrity="sha512-DmMao0nRIbyDjbaHc8fNd3kxGsZj9PCU6Iu/CeidLQT9Py8nYVA5n0PqXYmvqNdU+lCiTHOM/4E7bM/G8BttJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
+
+    <script src="lib/asciichart/asciichart.js"></script>
+</head>
+
+<body>
+    <div class="d-flex flex-column h-100">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark container-fluid">
+            <a class="navbar-brand" href="#" onclick="onReload()">GUIX Studio flag decoder</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-toggle="modal" data-target="#exampleModalCenter">About</a>
+                        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+                            aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLongTitle">About</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Created by <a href="https://github.com/ematt"  target="_blank">Vlad Tuhut</a> //
+                                            Fork me on <a href="https://github.com/ematt/ascii_plot_lut_generator"  target="_blank"><i class="bi bi-github"></i></a></p>
+                                        <p>
+                                        <h6 class="text-muted">Thanks to:</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item"><a href="https://codemirror.net/" target="_blank">CodeMirror</a></li>
+                                            <li class="list-group-item"><a href="https://github.com/kroitor/asciichart/" target="_blank">asciichart</a></li>
+                                            <li class="list-group-item"><a href="https://getbootstrap.com/" target="_blank">Bootstrap</a></li>
+                                            <li class="list-group-item"><a href="https://lodash.com/" target="_blank">Lodash</a></li>
+                                            <li class="list-group-item"><a href="https://fonts.google.com/specimen/Source+Code+Pro/" target="_blank">Source Code Pro</a></li>
+                                            <li class="list-group-item"><a href="https://popper.js.org//" target="_blank">PooperJs</a></li>
+                                            <li class="list-group-item"><a href="https://split.js.org/" target="_blank">SplitJs</a></li>
+                                        </ul>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+
+                <form class="form-inline mt-2 mt-md-0">
+                    <!-- <input class="form-control mr-sm-2" id="plotHeight" name="plotHeight" type="number"
+                        placeholder="Graph Height" aria-label="Graph Height" data-toggle="tooltip"
+                        title="Graph Height" />
+
+                    <input class="form-control mr-sm-2" id="dataType" name="dataType" type="text"
+                        placeholder="Data type" aria-label="Data type" data-toggle="tooltip" title="Data type"
+                        list="dataTypeList" value="int" />
+                    <datalist id="dataTypeList">
+                        <option value="int">
+                        <option value="float">
+                        <option value="int8_t">
+                        <option value="uint8_t">
+                        <option value="int16_t">
+                        <option value="uint16_t">
+                        <option value="int32_t">
+                        <option value="uint32_t">
+                        <option value="int64_t">
+                        <option value="uint64_t">
+                    </datalist>
+
+                    <input class="form-control mr-sm-2" id="plotName" name="plotName" type="text"
+                        placeholder="Plot Name" aria-label="Plot Name" data-toggle="tooltip" title="Plot Name"
+                        value="Data sequence" />
+
+                    <button type="button" class="btn btn-primary" onclick="onGenerate()">Run ></button>
+
+                     -->
+                    <input  id="guix-value" class="form-control mr-sm-2" name="guix-value" type="text"
+                        placeholder="GUIX flags" aria-label="GUIX flags" data-toggle="tooltip" title="GUIX flags"
+                        value="GUIX flags"/> 
+                    <button type="button" class="btn btn-primary form-control mr-sm-2" id="guix-status-decode" onclick="onDecodeGuixStatus()">Decode Status</button>
+                    <button type="button" class="btn btn-primary form-control mr-sm-2" id="guix-style-decode" onclick="onDecodeGuixStyle()">Decode Style</button>
+                </form>
+            </div>
+        </nav>
+        <main role="main" class="container-fluid flex-grow-1 bg-dark px-0">
+            <!-- <div class="row h-100 overflow-auto split"> -->
+            <div class="container px-4">
+                <!-- <input type="text" id="guix-value"/> 
+                <button type="button" class="btn btn-primary" id="guix-status-decode" onclick="onDecodeGuixStatus()">Decode Status</button>
+                <button type="button" class="btn btn-primary" id="guix-style-decode" onclick="onDecodeGuixStyle()">Decode Style</button> -->
+                <div id="guix-status-result" style="color:white">N/A</p>
+            </div>
+        </main>
+        <!-- <footer class="container-fluid text-white bg-dark">
+            <div class="container">
+                <div class="content text-center">
+                    <p>Created by <a href="#">Vlad Tuhut</a> //
+                        Fork me on <a href="#"><i class="bi bi-github"></i></a></p>
+                </div>
+            </div>
+        </footer> -->
+    </div>
+
+    <script type="text/javascript">
+        function isValidHex(testNum){
+            let validHex = false;
+            let numLength = testNum.length;
+            let parsedNum = parseInt(testNum, 16);
+            if(!isNaN(parsedNum) && parsedNum.length===numLength){
+                validHex = true;
+            }
+            return validHex;
+        }
+
+        function guixStatusFlag(value) 
+        {
+            return (value[1] & this.status) != 0;
+        }
+
+        function guixStatusDecode(status)
+        {
+            const flags = 
+            [
+                ["GX_STATUS_VISIBLE", 0x00000001],
+                ["GX_STATUS_SELECTABLE", 0x00000002],
+                ["GX_STATUS_ACCEPTS_INPUT", 0x00000004],
+                ["GX_STATUS_HIDDEN", 0x00000008],
+                ["GX_STATUS_DEFAULT_FOCUS", 0x00000010],
+                ["GX_STATUS_ACCEPTS_FOCUS", 0x00000020],
+                ["GX_STATUS_HAS_FOCUS", 0x00000040],
+                ["GX_STATUS_NOTIFY_ON_GAIN_FOCUS", 0x00000080],
+                ["GX_STATUS_NAV_STOP", 0x00000100],
+                ["GX_STATUS_NAV_PARENT", 0x00000200],
+                ["GX_STATUS_MOVABLE", 0x00001000],
+                ["GX_STATUS_BUTTON_DERIVED", 0x00002000],
+                ["GX_STATUS_TOGGLE_UNLOCK", 0x00004000],
+                ["GX_STATUS_DIRTY", 0x00008000],
+                ["GX_STATUS_CURSOR_SHOW", 0x00010000],
+                ["GX_STATUS_CURSOR_DRAW", 0x00020000],
+                ["GX_STATUS_MARK_PREVIOUS", 0x00040000],
+                ["GX_STATUS_MARK_NEXT", 0x00080000],
+                ["GX_STATUS_ANIMATION_NONE", 0x00010000],
+                ["GX_STATUS_TRACKING_PEN", 0x00020000],
+                ["GX_STATUS_MODAL", 0x00100000],
+                ["GX_STATUS_DYNAMIC_BUFFER", 0x01000000],
+                ["GX_STATUS_LINE_BREAK_PROCESSED", 0x02000000],
+                ["GX_STATUS_RESIZE_NOTIFY", 0x04000000],
+                ["GX_STATUS_STUDIO_CREATED", 0x08000000],
+                ["GX_STATUS_TRANSPARENT", 0x10000000],
+                ["GX_STATUS_NONCLIENT", 0x20000000],
+                ["GX_STATUS_OWNS_INPUT", 0x40000000],
+                ["GX_STATUS_DYNAMICALLY_ALLOCATED", 0x80000000],
+            ];
+
+            let filterContext = {
+                status: status
+            };
+            matchFlags = flags.filter(guixStatusFlag, filterContext);
+
+            return matchFlags;
+        }
+
+        function guixStyleDecode(style)
+        {
+            const flags = 
+            [
+                ["GX_STYLE_NONE",                       0x00000000],
+                ["GX_STYLE_BORDER_NONE",                0x00000000],
+                ["GX_STYLE_BORDER_RAISED",              0x00000001],
+                ["GX_STYLE_BORDER_RECESSED",            0x00000002],
+                ["GX_STYLE_BORDER_THIN",                0x00000004],
+                ["GX_STYLE_BORDER_THICK",               0x00000008],
+                // ["GX_STYLE_BORDER_MASK",                0x0000000f],
+                ["GX_STYLE_TRANSPARENT",                0x10000000],
+                ["GX_STYLE_DRAW_SELECTED",              0x20000000],
+                ["GX_STYLE_ENABLED",                    0x40000000],
+                ["GX_STYLE_DYNAMICALLY_ALLOCATED",      0x80000000],
+                ["GX_STYLE_USE_LOCAL_ALPHA",            0x01000000],
+                ["GX_STYLE_BUTTON_PUSHED",              0x00000010],
+                ["GX_STYLE_BUTTON_TOGGLE",              0x00000020],
+                ["GX_STYLE_BUTTON_RADIO",               0x00000040],
+                ["GX_STYLE_BUTTON_EVENT_ON_PUSH",       0x00000080],
+                ["GX_STYLE_BUTTON_REPEAT",              0x00000100],
+                ["GX_STYLE_SPRITE_AUTO",                0x00000010],
+                ["GX_STYLE_SPRITE_LOOP",                0x00000020],
+                ["GX_STYLE_CENTER_SELECTED",            0x00000010],
+                ["GX_STYLE_WRAP",                       0x00000020],
+                ["GX_STYLE_FLICKABLE",                  0x00000040],
+                ["GX_STYLE_HALIGN_CENTER",              0x00010000],
+                ["GX_STYLE_HALIGN_LEFT",                0x00020000],
+                ["GX_STYLE_HALIGN_RIGHT",               0x00040000],
+                ["GX_STYLE_VALIGN_CENTER",              0x00080000],
+                ["GX_STYLE_VALIGN_TOP",                 0x00100000],
+                ["GX_STYLE_VALIGN_BOTTOM",              0x00200000],
+                // ["GX_PIXELMAP_HALIGN_MASK",             0x00070000],
+                // ["GX_PIXELMAP_VALIGN_MASK",             0x00380000],
+                ["GX_STYLE_SHOW_NEEDLE",                0x00000200],
+                ["GX_STYLE_SHOW_TICKMARKS",             0x00000400],
+                ["GX_STYLE_SLIDER_VERTICAL",            0x00000800],
+                ["GX_STYLE_TILE_BACKGROUND",            0x00001000],
+                ["GX_STYLE_PROGRESS_PERCENT",           0x00000010],
+                ["GX_STYLE_PROGRESS_TEXT_DRAW",         0x00000020],
+                ["GX_STYLE_PROGRESS_VERTICAL",          0x00000040],
+                ["GX_STYLE_PROGRESS_SEGMENTED_FILL",    0x00000100],
+                ["GX_STYLE_RADIAL_PROGRESS_ALIAS",      0x00000200],
+                ["GX_STYLE_RADIAL_PROGRESS_ROUND",      0x00000400],
+                ["GX_STYLE_RADIAL_PROGRESS_NO_BACKTRACK", 0x00000800],
+                ["GX_STYLE_TEXT_LEFT",                  0x00001000],
+                ["GX_STYLE_TEXT_RIGHT",                 0x00002000],
+                ["GX_STYLE_TEXT_CENTER",                0x00004000],
+                // ["GX_STYLE_TEXT_ALIGNMENT_MASK",        0x00007000],
+                ["GX_STYLE_TEXT_COPY",                  0x00008000],
+                ["GX_STYLE_CURSOR_BLINK",               0x00000040],
+                ["GX_STYLE_CURSOR_ALWAYS",              0x00000080],
+                ["GX_STYLE_TEXT_INPUT_NOTIFY_ALL",      0x00000100],
+                ["GX_STYLE_TEXT_INPUT_READONLY",        0x00000200],
+                ["GX_STYLE_TILE_WALLPAPER",             0x00040000],
+                ["GX_STYLE_CIRCULAR_GAUGE_CCW",         0x00000010],
+                ["GX_STYLE_MENU_EXPANDED",              0x00000010],
+                ["GX_STYLE_TREE_VIEW_SHOW_ROOT_LINES",  0x00000010],
+            ];
+
+            let filterContext = {
+                status: style
+            };
+            matchFlags = flags.filter(guixStatusFlag, filterContext);
+
+            return matchFlags;
+        }
+
+        function guixFlagsToHtmlTable(flags, id)
+        {
+            let table = `
+            <table class="table table-striped" id = "${id}">
+            <thead>
+                <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Hex</th>
+                <th scope="col">Binary</th>
+                </tr>
+            </thead>
+            <tbody> 
+            `;
+            //create//append rows 
+            for(i = 0; i < flags.length; i++){
+                table = table +
+                `<tr>
+                <th scope="row">${flags[i][0]}</th>
+                <td>0x${flags[i][1].toString(16).padStart(8, '0')}</td>
+                <td>0b${flags[i][1].toString(2).padStart(29, '0')}</td>
+                </tr>`
+            }
+            //close off table
+            table = table +
+            `</tbody>
+            </table>`;
+
+            return table;
+        }
+
+        function onDecodeGuixStatus()
+        {
+            userInput = document.getElementById("guix-value").value;
+            if (isValidHex(userInput)){ // Not working
+                console.log ("String is hex");
+                document.getElementById("guix-status-result").innerText = "Invalid Input";
+                return;
+            }         
+
+            value = parseInt(userInput);
+            decodedStatus = guixStatusDecode(value);
+            decodedStyle = guixStyleDecode(value);
+
+            htmlTable = guixFlagsToHtmlTable(decodedStatus, "guix-status-result-table");
+
+            document.getElementById("guix-status-result").innerHTML = htmlTable;
+        }
+
+        function onDecodeGuixStyle()
+        {
+            userInput = document.getElementById("guix-value").value;
+            if (isValidHex(userInput)){ // Not working
+                console.log ("String is hex");
+                document.getElementById("guix-status-result").innerText = "Invalid Input";
+                return;
+            }         
+
+            value = parseInt(userInput);
+            decodedStyle = guixStyleDecode(value);
+
+            htmlTable = guixFlagsToHtmlTable(decodedStyle, "guix-style-result-table");
+
+            document.getElementById("guix-status-result").innerHTML = htmlTable;
+        }
+    </script>
+</body>
+
+</html>
